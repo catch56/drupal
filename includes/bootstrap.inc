@@ -1805,41 +1805,13 @@ function drupal_get_schema($table = NULL, $rebuild = FALSE) {
 /**
  * Confirm that a function is available.
  *
- * If the function is already available, this function does nothing.
- * If the function is not available, it tries to load the file where the
- * function lives. If the file is not available, it returns false, so that it
- * can be used as a drop-in replacement for function_exists().
- *
  * @param $function
  *   The name of the function to check or load.
  * @return
  *   TRUE if the function is now available, FALSE otherwise.
  */
 function drupal_function_exists($function) {
-  static $checked = array();
-  static $maintenance;
-
-  if (!isset($maintenance)) {
-    $maintenance = defined('MAINTENANCE_MODE');
-  }
-
-  if ($maintenance) {
-    return function_exists($function);
-  }
-
-  if (isset($checked[$function])) {
-    return $checked[$function];
-  }
-  $checked[$function] = FALSE;
-
-  if (function_exists($function)) {
-    $checked[$function] = TRUE;
-    return TRUE;
-  }
-
-  $checked[$function] = _registry_check_code('function', $function);
-
-  return $checked[$function];
+  return function_exists($function);
 }
 
 /**

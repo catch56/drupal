@@ -51,6 +51,7 @@ function image_menu() {
     'description' => 'Configure styles that can be used for resizing or adjusting images on display.',
     'page callback' => 'image_style_list',
     'access arguments' => array('administer image styles'),
+    'file' => 'image.admin.inc',
   );
   $items['admin/settings/image-styles/list'] = array(
     'title' => 'List',
@@ -59,6 +60,7 @@ function image_menu() {
     'access arguments' => array('administer image styles'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
+    'file' => 'image.admin.inc',
   );
   $items['admin/settings/image-styles/add'] = array(
     'title' => 'Add style',
@@ -68,6 +70,7 @@ function image_menu() {
     'access arguments' => array('administer image styles'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
+    'file' => 'image.admin.inc',
   );
   $items['admin/settings/image-styles/edit/%image_style'] = array(
     'title' => 'Edit style',
@@ -78,6 +81,7 @@ function image_menu() {
     'page arguments' => array('image_style_form', 4),
     'access arguments' => array('administer image styles'),
     'type' => MENU_CALLBACK,
+    'file' => 'image.admin.inc',
   );
   $items['admin/settings/image-styles/delete/%image_style'] = array(
     'title' => 'Delete style',
@@ -88,6 +92,7 @@ function image_menu() {
     'page arguments' => array('image_style_delete_form', 4, TRUE),
     'access arguments' => array('administer image styles'),
     'type' => MENU_CALLBACK,
+    'file' => 'image.admin.inc',
   );
   $items['admin/settings/image-styles/edit/%image_style/effects/%image_effect'] = array(
     'title' => 'Edit image effect',
@@ -98,6 +103,7 @@ function image_menu() {
     'page arguments' => array('image_effect_form', 4, 6),
     'access arguments' => array('administer image styles'),
     'type' => MENU_CALLBACK,
+    'file' => 'image.admin.inc',
   );
   $items['admin/settings/image-styles/edit/%image_style/effects/%image_effect/delete'] = array(
     'title' => 'Delete image effect',
@@ -108,6 +114,7 @@ function image_menu() {
     'page arguments' => array('image_effect_delete_form', 4, 6),
     'access arguments' => array('administer image styles'),
     'type' => MENU_CALLBACK,
+    'file' => 'image.admin.inc',
   );
   $items['admin/settings/image-styles/edit/%image_style/add/%image_effect_definition'] = array(
     'title' => 'Add image effect',
@@ -118,6 +125,7 @@ function image_menu() {
     'page arguments' => array('image_effect_form', 4, 6),
     'access arguments' => array('administer image styles'),
     'type' => MENU_CALLBACK,
+    'file' => 'image.admin.inc',
   );
 
   return $items;

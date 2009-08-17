@@ -332,111 +332,42 @@ function module_hook($module, $hook) {
  * Determine which modules are implementing a hook.
  *
  * @param $hook
- *   The name of the hook (e.g. "help" or "menu"). Special cases:
- *     MODULE_IMPLEMENTS_CLEAR_CACHE: Force the stored list of hook
- *   implementations to be regenerated (such as after enabling a new module,
- *     before processing hook_enable).
- *     MODULE_IMPLEMENTS_WRITE_CACHE: Write the stored list of hook
- *     implementations into the cache_registry table.
- * @param $sort
- *   By default, modules are ordered by weight and module name. By setting this
- *   option to TRUE, modules will be ordered by module name.
- * @return
- *   An array with the names of the modules which are implementing this hook.
- *   All enabled modules are taken into consideration and the files containing
- *   the implementations are loaded as necessary.
- */
-function module_implements($hook, $sort = FALSE) {
-  static $implementations = array(), $sorted_implementations = array(), $loaded = array(), $cached_hooks = 0, $maintenance;
-
-  // Use a static variable for maintenance mode to avoid the overhead of
-  // calling defined() each time the function is called.
-  if (!isset($maintenance)) {
-    $maintenance = defined('MAINTENANCE_MODE');
-  }
-
-  if ($maintenance) {
-    return _module_implements_maintenance($hook, $sort);
-  }
-  if ($hook === MODULE_IMPLEMENTS_CLEAR_CACHE) {
-    $implementations = array();
-    $sorted_implementations = array();
-    $loaded = array();
-    $cached_hooks = 0;
-    cache_clear_all('hooks', 'cache_registry');
-    return;
-  }
-  if ($hook === MODULE_IMPLEMENTS_WRITE_CACHE) {
-    // Only write this to cache if we loaded new implementations.
-    if (count($implementations) > $cached_hooks) {
-      cache_set('hooks', $implementations, 'cache_registry');
-    }
-    return;
-  }
-
-  if (!isset($loaded[$hook])) {
-    if (empty($implementations) && ($cache = cache_get('hooks', 'cache_registry'))) {
-      $implementations = $cache->data;
-      $cached_hooks = count($implementations);
-    }
-    if (!isset($implementations[$hook])) {
-      // The module name (rather than the filename) is used as the fallback
-      // weighting in order to guarantee consistent behavior across different
-      // Drupal installations, which might have modules installed in different
-      // locations in the file system. The ordering here must also be
-      // consistent with the one used in module_list().
-      $implementations[$hook] = db_query("SELECT module FROM {registry} WHERE type = 'function' AND suffix = :hook ORDER BY weight, module", array(':hook' => $hook))->fetchCol();
-    }
-    foreach ($implementations[$hook] as $module) {
-      $function = $module . '_' . $hook;
-      if (!function_exists($function)) {
-        drupal_function_exists($function);
-      }
-    }
-    $loaded[$hook] = TRUE;
-  }
-
-  if ($sort) {
-    if (!isset($sorted_implementations[$hook])) {
-      $sorted_implementations[$hook] = $implementations[$hook];
-      sort($sorted_implementations[$hook]);
-    }
-    return $sorted_implementations[$hook];
-  }
-  else {
-    return $implementations[$hook];
-  }
-}
-
-/**
- * This is the maintenance version of module_implements for internal use only.
- *
- * This function is called whenever MAINTENANCE_MODE is defined and is a
- * safe code path for Drupal installation or upgrade because it does not use
- * the database, instead it uses module_list. @see module_list $fixed_list on
- * how to make module_list also DB independent.
- *
- * @param $hook
  *   The name of the hook (e.g. "help" or "menu").
  * @param $sort
- *   By default, modules are ordered by weight and filename, settings this
- *   option to TRUE, module list will be ordered by module name.
+ *   By default, modules are ordered by weight and filename, settings this option
+ *   to TRUE, module list will be ordered by module name.
+ * @param $refresh
+ *   For internal use only: Whether to force the stored list of hook
+ *   implementations to be regenerated (such as after enabling a new module,
+ *   before processing hook_enable).
  * @return
  *   An array with the names of the modules which are implementing this hook.
- *   Only enabled and already loaded modules are taken into consideration.
  */
-function _module_implements_maintenance($hook, $sort = FALSE) {
-  $implementations = array();
-  foreach (module_list() as $module) {
-    $function = $module . '_' . $hook;
-    if (function_exists($function)) {
-      $implementations[] = $module;
-    }
-    if ($sort) {
-      sort($implementations);
+function module_implements($hook, $sort = FALSE, $refresh = FALSE) {
+  static $implementations;
+
+  if ($refresh) {
+    $implementations = array();
+    return;
+  }
+
+  if (!isset($implementations[$hook])) {
+    $implementations[$hook] = array();
+    $list = module_list(FALSE, $sort);
+    foreach ($list as $module) {
+      if (module_hook($module, $hook)) {
+        $implementations[$hook][] = $module;
+      }
     }
   }
-  return $implementations;
+
+  // The explicit cast forces a copy to be made. This is needed because
+  // $implementations[$hook] is only a reference to an element of
+  // $implementations and if there are nested foreaches (due to nested node
+  // API calls, for example), they would both manipulate the same array's
+  // references, which causes some modules' hooks not to be called.
+  // See also http://www.zend.com/zend/art/ref-count.php.
+  return (array)$implementations[$hook];
 }
 
 /**

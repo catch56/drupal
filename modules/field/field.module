@@ -13,6 +13,7 @@
 require(DRUPAL_ROOT . '/modules/field/field.crud.inc');
 require(DRUPAL_ROOT . '/modules/field/field.info.inc');
 require(DRUPAL_ROOT . '/modules/field/field.attach.inc');
+require(DRUPAL_ROOT . '/modules/field/field.form.inc');
 
 /**
  * @defgroup field Field API
@@ -158,6 +159,7 @@ function field_menu() {
     'page callback' => 'field_add_more_js',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
+    'file' => 'field.form.inc',
   );
 
   return $items;

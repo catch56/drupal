@@ -163,7 +163,7 @@ function _registry_parse_files($files) {
  *   (optional) Weight of the module.
  */
 function _registry_parse_file($filename, $contents, $module = '', $weight = 0) {
-  $map = &drupal_static(__FUNCTION__, array(T_FUNCTION => 'function', T_CLASS => 'class', T_INTERFACE => 'interface'));
+  $map = &drupal_static(__FUNCTION__, array(T_CLASS => 'class', T_INTERFACE => 'interface'));
   // Delete registry entries for this file, so we can insert the new resources.
   db_delete('registry')
     ->condition('filename', $filename)
@@ -174,19 +174,9 @@ function _registry_parse_file($filename, $contents, $module = '', $weight = 0) {
     if (is_array($token) && isset($map[$token[0]])) {
       $type = $map[$token[0]];
       if ($resource_name = _registry_get_resource_name($tokens, $type)) {
-        $suffix = '';
-        // Collect the part of the function name after the module name,
-        // so that we can query the registry for possible hook implementations.
-        if ($type == 'function' && !empty($module)) {
-          $n = strlen($module);
-          if (substr($resource_name, 0, $n) == $module) {
-            $suffix = substr($resource_name, $n + 1);
-          }
-        }
         $fields = array(
           'filename' => $filename,
           'module' => $module,
-          'suffix' => $suffix,
           'weight' => $weight,
         );
         // Because some systems, such as cache, currently use duplicate function
